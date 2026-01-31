@@ -81,6 +81,31 @@ app.use(express.json());
 // Make io accessible in routes
 app.set('io', io);
 
+// Health check and root route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'SafeRoute Backend API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth/*',
+      shelters: '/api/shelters',
+      sos: '/api/sos'
+    }
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
 // MongoDB Connection with robust error handling
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/saferoute';
 
