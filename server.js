@@ -2696,6 +2696,37 @@ app.use((req, res) => {
   });
 });
 
+// ==================== SOCKET.IO CONNECTION HANDLING ====================
+io.on('connection', (socket) => {
+  console.log(`🔌 Socket connected: ${socket.id}`);
+
+  // Handle room joins
+  socket.on('join_room', (room) => {
+    socket.join(room);
+    console.log(`📢 Socket ${socket.id} joined room: ${room}`);
+  });
+
+  // Handle room leaves
+  socket.on('leave_room', (room) => {
+    socket.leave(room);
+    console.log(`📢 Socket ${socket.id} left room: ${room}`);
+  });
+
+  // P2P SOS Broadcast - Relay to all devices in p2p_room
+  socket.on('p2p_sos_broadcast', (sosData) => {
+    console.log(`🚨 P2P SOS Broadcast from ${socket.id}:`, sosData);
+
+    // Broadcast to ALL sockets in p2p_room EXCEPT the sender
+    socket.to('p2p_room').emit('p2p_sos', sosData);
+
+    console.log(`📡 SOS relayed to all devices in p2p_room`);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log(`🔌 Socket disconnected: ${socket.id}, reason: ${reason}`);
+  });
+});
+
 // ==================== START SERVER ====================
 const PORT = process.env.PORT || 3001;
 
